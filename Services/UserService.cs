@@ -5,6 +5,7 @@ namespace WebForTest.Services;
 public class UserService
 {
     private List<User> _users;
+
     public UserService()
     {
         _users = new List<User>();
@@ -23,10 +24,11 @@ public class UserService
     }
 
     /// <summary>
-    /// Запрос пользователя по логину
+    /// 
     /// </summary>
     /// <param name="login"></param>
     /// <returns></returns>
+    
     public User GetUserByLogin(string login)
     {
         var resultOnLogin = _users.FirstOrDefault(x => x.Login == login);
@@ -77,6 +79,8 @@ public class UserService
 
         return user;
     }
+
+
 
     public User Update(User user)
     {
