@@ -6,6 +6,7 @@ namespace WebForTest.Controllers
 {
     [ApiController]
     [Route("[controller]")]
+    
     public class UserController : ControllerBase
     {
         private readonly UserService _userService;
@@ -16,7 +17,7 @@ namespace WebForTest.Controllers
         }
 
         [HttpGet("user-active")]
-        [ProducesResponseType(typeof(List<User>), 200)]
+        [ProducesResponseType(200, Type = typeof(List<User>))]
         public IActionResult Read()
         {
             var users = _userService.GetActiveUsers();
@@ -24,19 +25,23 @@ namespace WebForTest.Controllers
         }
 
         [HttpGet("user-by-login")]
-        [ProducesResponseType(typeof(User), 200)]
+        [ProducesResponseType(200, Type = typeof(User))]
         public IActionResult ReadUserByLogin(string login)
         {
+            if(login == null)
+            {
+                return BadRequest();
+            }
             var userLogin = _userService.GetUserByLogin(login);
             return (IActionResult)userLogin;
         }
 
         [HttpGet("user-by-login-pass")]
-        [ProducesResponseType(typeof(User),200)]
+        [ProducesResponseType(200, Type = typeof(User))]
         public IActionResult ReadUserByLoginAndPass(string login,string pass)
         {
-            var logAndPass = _userService.GetUserByLoginAndPass(login, pass);
-            return (IActionResult)logAndPass;
+            var loginAndPass = _userService.GetUserByLoginAndPass(login, pass);
+            return (IActionResult)loginAndPass;
         }
 
         [HttpPost]
