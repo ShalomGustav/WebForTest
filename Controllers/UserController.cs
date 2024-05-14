@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using WebForTest.Models;
 using WebForTest.Services;
 
@@ -16,38 +17,46 @@ namespace WebForTest.Controllers
             _userService = userService;
         }
 
+        //[HttpGet("user-active")]
+        //[ProducesResponseType(typeof(User),200)]
+        //public IActionResult GetActive()
+        //{
+        //    var users = _userService.GetActiveUsers();
+        //    return Ok(users);
+        //}
+
         [HttpGet("user-active")]
-        [ProducesResponseType(200, Type = typeof(List<User>))]
-        public IActionResult Read()
+        public List<User> GetActive()
         {
             var users = _userService.GetActiveUsers();
-            return (IActionResult)users;
+            return users;
         }
 
         [HttpGet("user-by-login")]
-        [ProducesResponseType(200, Type = typeof(User))]
-        public IActionResult ReadUserByLogin(string login)
+        public User GetByLogin(string login)
         {
-            if(login == null)
-            {
-                return BadRequest();
-            }
             var userLogin = _userService.GetUserByLogin(login);
-            return (IActionResult)userLogin;
+            return userLogin;
         }
 
         [HttpGet("user-by-login-pass")]
-        [ProducesResponseType(200, Type = typeof(User))]
-        public IActionResult ReadUserByLoginAndPass(string login,string pass)
+        public User GetByLoginAndPass(string login,string pass)
         {
             var loginAndPass = _userService.GetUserByLoginAndPass(login, pass);
-            return (IActionResult)loginAndPass;
+            return loginAndPass;
         }
 
-        [HttpPost]
-        public void Create()
+        [HttpGet("user-by-birthday")]
+        public List<User> GetByBirthDay(int age)
         {
+            var birthDay = _userService.GetUserByBirthDay(age);
+            return birthDay;
+        }
 
+        [HttpPost("create-user-by-name-login-pass")]
+        public void Create(User user)
+        {
+            _userService.Create(user);
         }
 
         [HttpPut]

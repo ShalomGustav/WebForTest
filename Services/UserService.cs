@@ -53,12 +53,12 @@ public class UserService
     /// </summary>
     /// <param name="dayTime"></param>
     /// <returns></returns>
-    public List<User> GetUserByBirthDay(DateTime dayTime)
-    {
-        var resultOnBirthDay = _users.Where(x => x.BirthDay > dayTime).ToList();
+    //public List<User> GetUserByBirthDay(DateTime dayTime)
+    //{
+    //    var resultOnBirthDay = _users.Where(x => x.BirthDay > dayTime).ToList();
 
-        return resultOnBirthDay;
-    }
+    //    return resultOnBirthDay;
+    //}
     /// <summary>
     /// Запрос всех пользователей старше определённого возраста ввод типа int
     /// </summary>
@@ -72,7 +72,13 @@ public class UserService
     }
     #endregion
 
+    #region Create(post)
 
+    /// <summary>
+    /// Создание пользователя
+    /// </summary>
+    /// <param name="user"></param>
+    /// <returns></returns>
     public User Create(User user)
     {
         _users.Add(user);
@@ -80,19 +86,33 @@ public class UserService
         return user;
     }
 
+    #endregion
 
-
+    #region Update(put)
+      
     public User Update(User user)
     {
         var resultUser = _users.FirstOrDefault(x => x.Guid == user.Guid);
-        if(resultUser == null)
+        if (resultUser == null)
         {
             throw new Exception("Такого пользователя не существует");
         }
         _users.Remove(resultUser);
         _users.Add(user);
-        
+
         return user;
+    }
+
+    public void СhangeNameGenBirthDay(User user,User updateUser)
+    {
+        var resultUpdateUser = _users.FirstOrDefault(x => x.Guid == user.Guid && user.ModifiedOn == null);
+
+        if(resultUpdateUser != null && updateUser != null)
+        {
+            resultUpdateUser.Name = updateUser.Name;
+            resultUpdateUser.Gender = updateUser.Gender;
+            resultUpdateUser.BirthDay = updateUser.BirthDay;
+        }
     }
     /// <summary>
     /// Восстановление пользователя - Очистка полей (RevokedOn, RevokedBy)
@@ -101,8 +121,8 @@ public class UserService
     public void RecoveryUser(User user)
     {
         var guidUser = _users.FirstOrDefault(x => x.Guid == user.Guid);
-        
-        if(guidUser != null)
+
+        if (guidUser != null)
         {
             _users.Remove(user);
             guidUser.RevokedOn = null;
@@ -110,10 +130,12 @@ public class UserService
             _users.Add(guidUser);
         }
     }
+    #endregion
 
+    #region Delete(delete)
     public bool Delete(User user)
     {
-        if(user == null)
+        if (user == null)
         {
             return false;
         }
@@ -124,12 +146,15 @@ public class UserService
     public void DeleteUserByLogin(string login)
     {
         var deleteUserOnLogin = _users.FirstOrDefault(x => x.Login == login);
-        
-        if(deleteUserOnLogin != null)
+
+        if (deleteUserOnLogin != null)
         {
             _users.Remove(deleteUserOnLogin);
         }
     }
+    #endregion
+
+
 
 
 }
