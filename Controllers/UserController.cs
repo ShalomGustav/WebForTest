@@ -110,10 +110,5 @@ namespace WebForTest.Controllers
             _userService.DeleteUserByLogin(user);
         }
         #endregion
-
-
-
-
-
     }
 }

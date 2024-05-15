@@ -49,17 +49,14 @@ public class UserService
         return resultOnLogPass;
     }
 
-    /// <summary>
-    /// Запрос всех пользователей старше определённого возраста ввод типа DateTime
-    /// </summary>
-    /// <param name="dayTime"></param>
-    /// <returns></returns>
+    
     //public List<User> GetUserByBirthDay(DateTime dayTime)
     //{
     //    var resultOnBirthDay = _users.Where(x => x.BirthDay > dayTime).ToList();
 
     //    return resultOnBirthDay;
     //}
+
     /// <summary>
     /// Запрос всех пользователей старше определённого возраста ввод типа int
     /// </summary>
@@ -68,7 +65,6 @@ public class UserService
     public List<User> GetUserByBirthDay(int age)
     {
         var resultOnBirthDay = _users.Where(x => x.BirthDay > (DateTime.Today.AddYears(-age))).ToList();
-
         return resultOnBirthDay;
     }
     #endregion
@@ -82,8 +78,12 @@ public class UserService
     /// <returns></returns>
     public User Create(User user)
     {
-        _users.Add(user);
+        if(user == null)
+        {
+            throw new Exception();
+        }
 
+        _users.Add(user);
         return user;
     }
 
@@ -117,13 +117,23 @@ public class UserService
     /// <param name="updateUser"></param>
     public void СhangeNameGenBirthDay(User updateUser)
     {
-        var userOld = _users.FirstOrDefault(x => x.Guid == updateUser.Guid && updateUser.RevokedOn == null);
-
-        if(userOld != null && updateUser != null)
+        if(updateUser == null)
         {
-            userOld.Name = updateUser.Name;
-            userOld.Gender = updateUser.Gender;
-            userOld.BirthDay = updateUser.BirthDay;
+            throw new Exception();
+        }
+        else
+        {
+            var userOld = _users.FirstOrDefault(x => x.Guid == updateUser.Guid && updateUser.RevokedOn == null);
+            if (userOld == null)
+            {
+                throw new Exception();
+            }
+            else
+            {
+                userOld.Name = updateUser.Name;
+                userOld.Gender = updateUser.Gender;
+                userOld.BirthDay = updateUser.BirthDay;
+            }
         }
     }
 
@@ -134,11 +144,21 @@ public class UserService
     /// <param name="updateUser"></param>
     public void СhangePassword(User user)
     {
-        var resultUpdateUser = _users.FirstOrDefault(x => x.Guid == user.Guid && user.RevokedOn == null);
-
-        if (resultUpdateUser != null && user != null)
+        if(user == null)
         {
-            resultUpdateUser.Password = user.Password;
+            throw new Exception();
+        }
+        else
+        {
+            var resultUpdateUser = _users.FirstOrDefault(x => x.Guid == user.Guid && user.RevokedOn == null);
+            if (resultUpdateUser == null)
+            {
+                resultUpdateUser.Password = user.Password;
+            }
+            else
+            {
+                throw new Exception();
+            }
         }
     }
 
@@ -149,9 +169,17 @@ public class UserService
     /// <param name="updateUser"></param>
     public void СhangeLogin(User user)
     {
+        if(user == null)
+        {
+            throw new Exception();
+        }
         var resultUpdateUser = _users.FirstOrDefault(x => x.Guid == user.Guid && user.RevokedOn == null);
 
-        if (resultUpdateUser != null && user != null )
+        if (resultUpdateUser == null)
+        {
+            throw new Exception();
+        }
+        else
         {
             if (!user.Login.Contains(user.Login))
             {
