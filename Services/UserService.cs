@@ -1,4 +1,5 @@
-﻿using WebForTest.Models;
+﻿using Microsoft.AspNetCore.Mvc;
+using WebForTest.Models;
 
 namespace WebForTest.Services;
 
@@ -89,7 +90,13 @@ public class UserService
     #endregion
 
     #region Update(put)
-      
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="user"></param>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
     public User Update(User user)
     {
         var resultUser = _users.FirstOrDefault(x => x.Guid == user.Guid);
@@ -103,22 +110,61 @@ public class UserService
         return user;
     }
 
-    public void СhangeNameGenBirthDay(User user,User updateUser)
+    /// <summary>
+    ///  Изменение имени, пола или даты рождения пользователя
+    /// </summary>
+    /// <param name="user"></param>
+    /// <param name="updateUser"></param>
+    public void СhangeNameGenBirthDay(User updateUser)
     {
-        var resultUpdateUser = _users.FirstOrDefault(x => x.Guid == user.Guid && user.ModifiedOn == null);
+        var userOld = _users.FirstOrDefault(x => x.Guid == updateUser.Guid && updateUser.RevokedOn == null);
 
-        if(resultUpdateUser != null && updateUser != null)
+        if(userOld != null && updateUser != null)
         {
-            resultUpdateUser.Name = updateUser.Name;
-            resultUpdateUser.Gender = updateUser.Gender;
-            resultUpdateUser.BirthDay = updateUser.BirthDay;
+            userOld.Name = updateUser.Name;
+            userOld.Gender = updateUser.Gender;
+            userOld.BirthDay = updateUser.BirthDay;
         }
     }
+
+    /// <summary>
+    /// Изменение пароля
+    /// </summary>
+    /// <param name="user"></param>
+    /// <param name="updateUser"></param>
+    public void СhangePassword(User user)
+    {
+        var resultUpdateUser = _users.FirstOrDefault(x => x.Guid == user.Guid && user.RevokedOn == null);
+
+        if (resultUpdateUser != null && user != null)
+        {
+            resultUpdateUser.Password = user.Password;
+        }
+    }
+
+    /// <summary>
+    /// Изменение логина
+    /// </summary>
+    /// <param name="user"></param>
+    /// <param name="updateUser"></param>
+    public void СhangeLogin(User user)
+    {
+        var resultUpdateUser = _users.FirstOrDefault(x => x.Guid == user.Guid && user.RevokedOn == null);
+
+        if (resultUpdateUser != null && user != null )
+        {
+            if (!user.Login.Contains(user.Login))
+            {
+                resultUpdateUser.Login = user.Login;
+            }
+        }
+    }
+
     /// <summary>
     /// Восстановление пользователя - Очистка полей (RevokedOn, RevokedBy)
     /// </summary>
     /// <param name="user"></param>
-    public void RecoveryUser(User user)
+    public void Recovery(User user)
     {
         var guidUser = _users.FirstOrDefault(x => x.Guid == user.Guid);
 
@@ -153,8 +199,4 @@ public class UserService
         }
     }
     #endregion
-
-
-
-
 }
