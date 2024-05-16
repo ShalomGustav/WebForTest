@@ -114,24 +114,29 @@ public class UserService
     /// </summary>
     /// <param name="user"></param>
     /// <param name="updateUser"></param>
-    public void СhangeNameGenBirthDay(User updateUser)
+    public void СhangeNameGenBirthDay(string login,User updateUser)
     {
-        if(updateUser == null)
+        if(updateUser == null || login == null)
         {
             throw new Exception();
         }
         else
         {
-            var userOld = _users.FirstOrDefault(x => x.Guid == updateUser.Guid && updateUser.RevokedOn == null);
-            if (userOld == null)
+            var oldUser = GetUserByLogin(login);
+
+            if (oldUser == null)
             {
                 throw new Exception();
             }
             else
             {
-                userOld.Name = updateUser.Name;
-                userOld.Gender = updateUser.Gender;
-                userOld.BirthDay = updateUser.BirthDay;
+                if(oldUser.RevokedBy == null)
+                {
+                    oldUser.Name = updateUser.Name;
+                    oldUser.Gender = updateUser.Gender;
+                    oldUser.BirthDay = updateUser.BirthDay;
+                }
+                
             }
         }
     }
@@ -141,19 +146,22 @@ public class UserService
     /// </summary>
     /// <param name="user"></param>
     /// <param name="updateUser"></param>
-    public void СhangePassword(User user)
+    public void СhangePassword(string login,string password)
     {
-        if(user == null)
+        if(password == null)
         {
             throw new Exception();
         }
         else
         {
-            var resultCreateUser = GetUserByLogin(user);
-            var resultUpdateUser = _users.FirstOrDefault(x => x.Guid == user.Guid && user.RevokedOn == null);
-            if (resultUpdateUser == null)
+            var resultCreateUser = GetUserByLoginAndPass(login,password);
+            
+            if (resultCreateUser != null)
             {
-                resultUpdateUser.Password = user.Password;
+                if(resultCreateUser.RevokedOn == null)
+                {
+                    resultCreateUser.Password = password;
+                }
             }
             else
             {
