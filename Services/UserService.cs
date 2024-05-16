@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using WebForTest.Models;
+﻿using WebForTest.Models;
 
 namespace WebForTest.Services;
 
@@ -150,6 +149,7 @@ public class UserService
         }
         else
         {
+            var resultCreateUser = GetUserByLogin(user);
             var resultUpdateUser = _users.FirstOrDefault(x => x.Guid == user.Guid && user.RevokedOn == null);
             if (resultUpdateUser == null)
             {
@@ -167,23 +167,31 @@ public class UserService
     /// </summary>
     /// <param name="user"></param>
     /// <param name="updateUser"></param>
-    public void СhangeLogin(User user)
+    public void СhangeLogin(string login)
     {
-        if(user == null)
+        if(login == null)
         {
             throw new Exception();
         }
-        var resultUpdateUser = _users.FirstOrDefault(x => x.Guid == user.Guid && user.RevokedOn == null);
+        var resultChangeUser = GetUserByLogin(login);
+        //var resultUpdateUser = _users.FirstOrDefault(x => x.Guid == login.Guid && x.RevokedOn == null);
 
-        if (resultUpdateUser == null)
+        if (resultChangeUser == null)
         {
             throw new Exception();
         }
         else
         {
-            if (!user.Login.Contains(user.Login))
+            if(resultChangeUser.RevokedOn == null)
             {
-                resultUpdateUser.Login = user.Login;
+                if (!resultChangeUser.Login.Contains(resultChangeUser.Login))
+                {
+                    resultChangeUser.Login = login;
+                }
+                else
+                {
+                    throw new Exception("Такой логин существует");
+                }
             }
         }
     }
@@ -192,38 +200,50 @@ public class UserService
     /// Восстановление пользователя - Очистка полей (RevokedOn, RevokedBy)
     /// </summary>
     /// <param name="user"></param>
-    public void Recovery(User user)
+    public void RecoveryUser(string login)
     {
-        var guidUser = _users.FirstOrDefault(x => x.Guid == user.Guid);
-
-        if (guidUser != null)
+        if(login == null)
         {
-            _users.Remove(user);
-            guidUser.RevokedOn = null;
-            guidUser.RevokedBy = null;
-            _users.Add(guidUser);
+            throw new Exception();
+        }
+        else
+        {
+            var recoveryUser = GetUserByLogin(login);
+
+            if (recoveryUser != null)
+            {
+                _users.Remove(recoveryUser);
+                recoveryUser.RevokedOn = null;
+                recoveryUser.RevokedBy = null;
+                _users.Add(recoveryUser);
+            }
         }
     }
     #endregion
 
     #region Delete(delete)
-    public bool Delete(User user)
+ 
+    public void DeleteUserByLogin(string login,bool softRemove = true)
     {
-        if (user == null)
+        if (login == null)
         {
-            return false;
+            throw new Exception();
         }
-
-        return _users.Remove(user);
-    }
-
-    public void DeleteUserByLogin(string login)
-    {
-        var deleteUserOnLogin = _users.FirstOrDefault(x => x.Login == login);
-
-        if (deleteUserOnLogin != null)
+        else
         {
-            _users.Remove(deleteUserOnLogin);
+            var deleteUserOnLogin = GetUserByLogin(login);
+
+            if (softRemove == true)
+            {
+                _users.Remove(deleteUserOnLogin);
+                deleteUserOnLogin.RevokedBy = null;
+                deleteUserOnLogin.RevokedBy = null;
+                _users.Add(deleteUserOnLogin);
+            }
+            else
+            {
+                _users.Remove(deleteUserOnLogin);
+            }
         }
     }
     #endregion
