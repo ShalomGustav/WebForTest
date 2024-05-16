@@ -98,16 +98,10 @@ namespace WebForTest.Controllers
         #endregion
 
         #region HttpDelete
-        [HttpDelete("delete")]
-        public void Delete([FromBody] User user)
-        {
-            _userService.Delete(user);
-        }
-
         [HttpDelete("delete-by-login")]
-        public void DeleteByLogin([FromQuery] string user)
+        public void DeleteByLogin([FromQuery] string login,bool softRemove)
         {
-            _userService.DeleteUserByLogin(user);
+            _userService.DeleteUserByLogin(login,softRemove);
         }
         #endregion
     }
