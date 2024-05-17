@@ -57,42 +57,42 @@ namespace WebForTest.Controllers
         #region HttpPost
 
         [HttpPost("create-user-by-name-login-pass")]
-        public void Create([FromBody] User user)
+        public void Create([FromQuery] User user)
         {
-            _userService.Create(user);
+            _userService.CreateUser(user);
         }
 
         #endregion
 
         #region HttpPut
         [HttpPut("update")]
-        public User UserUpdate([FromBody] User user)
+        public User Update([FromQuery] User user)
         {
-            return _userService.Update(user);
+            return _userService.UpdateUser(user);
         }
 
         [HttpPut("change-name-gen-birthday")]
-        public void СhangeUser([FromBody] User user)
+        public void СhangeNameGenBirthDay([FromQuery] string login, User user)
         {
-             _userService.СhangeNameGenBirthDay(user);
+             _userService.СhangeUserNameGenBirthDay(login,user);
         }
 
         [HttpPut("change-password")]
-        public void СhangeUserPassword([FromBody] User user)
+        public void СhangePassword([FromQuery] string login, string password)
         {
-            _userService.СhangePassword(user);
+            _userService.СhangePasswordUser(login,password);
         }
 
         [HttpPut("change-login")]
-        public void СhangeUserLogin([FromBody] User user)
+        public void СhangeUser([FromQuery] string login)
         {
-            _userService.СhangeLogin(user);
+            _userService.СhangeLoginUser(login);
         }
 
         [HttpPut("recovery-user")]
-        public void RecoveryUser([FromBody] User user)
+        public void Recovery([FromQuery] string login)
         {
-            _userService.Recovery(user);
+            _userService.RecoveryUser(login);
         }
 
         #endregion

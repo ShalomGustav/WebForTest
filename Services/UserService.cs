@@ -75,7 +75,7 @@ public class UserService
     /// </summary>
     /// <param name="user"></param>
     /// <returns></returns>
-    public User Create(User user)
+    public User CreateUser(User user)
     {
         if(user == null)
         {
@@ -96,9 +96,9 @@ public class UserService
     /// <param name="user"></param>
     /// <returns></returns>
     /// <exception cref="Exception"></exception>
-    public User Update(User user)
+    public User UpdateUser(User user)
     {
-        var resultUser = _users.FirstOrDefault(x => x.Guid == user.Guid);
+        var resultUser = GetUserByLogin(user.Login);
         if (resultUser == null)
         {
             throw new Exception("Такого пользователя не существует");
@@ -114,7 +114,7 @@ public class UserService
     /// </summary>
     /// <param name="user"></param>
     /// <param name="updateUser"></param>
-    public void СhangeNameGenBirthDay(string login,User updateUser)
+    public void СhangeUserNameGenBirthDay(string login,User updateUser)
     {
         if(updateUser == null || login == null)
         {
@@ -123,10 +123,10 @@ public class UserService
         else
         {
             var oldUser = GetUserByLogin(login);
-
-            if (oldUser == null)
+            
+            if (oldUser == null || oldUser.Login == login)
             {
-                throw new Exception();
+                throw new Exception($"error {oldUser} cannot be null or have the same value {login}");
             }
             else
             {
@@ -146,7 +146,7 @@ public class UserService
     /// </summary>
     /// <param name="user"></param>
     /// <param name="updateUser"></param>
-    public void СhangePassword(string login,string password)
+    public void СhangePasswordUser(string login,string password)
     {
         if(password == null)
         {
@@ -175,7 +175,7 @@ public class UserService
     /// </summary>
     /// <param name="user"></param>
     /// <param name="updateUser"></param>
-    public void СhangeLogin(string login)
+    public void СhangeLoginUser(string login)
     {
         if(login == null)
         {
