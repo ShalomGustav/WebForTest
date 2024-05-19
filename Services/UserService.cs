@@ -4,11 +4,100 @@ namespace WebForTest.Services;
 
 public class UserService
 {
-    private List<User> _users;
+    private UserEntity _currentUser;
+    private List<UserEntity> _users;
 
     public UserService()
     {
-        _users = new List<User>();
+        _currentUser = null;
+        _users = new List<UserEntity>();
+
+        ApplyDefaultUserData();
+    }
+
+    public UserEntity GetCurrentUser()
+    {
+        return _currentUser;
+    }
+
+    private void ApplyDefaultUserData()
+    {
+        var admin = new UserEntity()
+        {
+            Admin = true,
+            Login = "Admin",
+            Password = "password",
+            Name = "Maxim",
+        };
+        _users.Add(admin);
+    }
+
+    public void Login(string login, string password)
+    {
+        if(string.IsNullOrEmpty(login) || string.IsNullOrEmpty(password))
+        {
+            throw new ArgumentNullException($"{nameof(login)} or {nameof(password)}");
+        }
+
+        var user = GetUserByLogin(login);
+        if(user == null)
+        {
+            throw new NullReferenceException("Не верный логин или пароль");
+        }
+
+        if(user.Password != password)
+        {
+            throw new ArgumentException("Не верный логин или пароль");
+        }
+
+        _currentUser = user;
+    }
+
+    public void Logout()
+    {
+        _currentUser = null;
+    }
+
+    private void SaveUser(UserEntity user)
+    {
+        var result = _users.FirstOrDefault(x => x.Guid == user.Guid);
+
+        if(result == null)
+        {
+            throw new NullReferenceException($"Пользователя с логином {user.Login} не существует");
+        }
+
+        if (IsPossibleToChange())
+        {
+            user.ModifiedOn = DateTime.Now;
+            user.ModifiedBy = _currentUser.Name;
+            _users.Remove(result);
+            _users.Add(user);
+        }
+    }
+
+    private bool IsPossibleToChange()
+    {
+        if(_currentUser == null)
+        {
+            return false;
+        }
+
+        var result = IsAdmin();
+
+        if(result == false)
+        {
+            result = _currentUser.RevokedOn == null;
+        }
+
+        return result;
+    }
+
+    private bool IsAdmin()
+    {
+        return _currentUser != null
+            ? _currentUser.Admin
+            : false;
     }
 
     #region Read(get)
@@ -16,7 +105,7 @@ public class UserService
     /// Запрос списка всех активных
     /// </summary>
     /// <returns></returns>
-    public List<User> GetActiveUsers()
+    public List<UserEntity> GetActiveUsers()
     {
         var resultRevokedOn = _users.Where(x => x.RevokedOn == null).OrderBy(x => x.CreatedOn).ToList();
 
@@ -24,12 +113,12 @@ public class UserService
     }
 
     /// <summary>
-    /// 
+    /// Получение по логину
     /// </summary>
     /// <param name="login"></param>
     /// <returns></returns>
     
-    public User GetUserByLogin(string login)
+    public UserEntity GetUserByLogin(string login)
     {
         var resultOnLogin = _users.FirstOrDefault(x => x.Login == login);
 
@@ -42,26 +131,18 @@ public class UserService
     /// <param name="login"></param>
     /// <param name="pass"></param>
     /// <returns></returns>
-    public User GetUserByLoginAndPass(string login, string pass)
+    public UserEntity GetUserByLoginAndPass(string login, string pass)
     {
         var resultOnLogPass = _users.FirstOrDefault(x => x.Login == login && x.Password == pass);
         return resultOnLogPass;
     }
-
-    
-    //public List<User> GetUserByBirthDay(DateTime dayTime)
-    //{
-    //    var resultOnBirthDay = _users.Where(x => x.BirthDay > dayTime).ToList();
-
-    //    return resultOnBirthDay;
-    //}
 
     /// <summary>
     /// Запрос всех пользователей старше определённого возраста ввод типа int
     /// </summary>
     /// <param name="age"></param>
     /// <returns></returns>
-    public List<User> GetUserByBirthDay(int age)
+    public List<UserEntity> GetUserByBirthday(int age)
     {
         var resultOnBirthDay = _users.Where(x => x.BirthDay > (DateTime.Today.AddYears(-age))).ToList();
         return resultOnBirthDay;
@@ -75,12 +156,19 @@ public class UserService
     /// </summary>
     /// <param name="user"></param>
     /// <returns></returns>
-    public User Create(User user)
+    public UserEntity CreateUser(UserDetails userDetails)
     {
-        if(user == null)
+        if(userDetails == null)
         {
-            throw new Exception();
+            throw new ArgumentNullException(nameof(userDetails));
         }
+
+        if (!IsAdmin())
+        {
+            throw new Exception("Недостаточно прав");
+        }
+
+        var user = UserEntity.ToUser(userDetails, _currentUser.Name);
 
         _users.Add(user);
         return user;
@@ -91,54 +179,18 @@ public class UserService
     #region Update(put)
 
     /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="user"></param>
-    /// <returns></returns>
-    /// <exception cref="Exception"></exception>
-    public User Update(User user)
-    {
-        var resultUser = _users.FirstOrDefault(x => x.Guid == user.Guid);
-        if (resultUser == null)
-        {
-            throw new Exception("Такого пользователя не существует");
-        }
-        _users.Remove(resultUser);
-        _users.Add(user);
-
-        return user;
-    }
-
-    /// <summary>
     ///  Изменение имени, пола или даты рождения пользователя
     /// </summary>
     /// <param name="user"></param>
     /// <param name="updateUser"></param>
-    public void СhangeNameGenBirthDay(string login,User updateUser)
+    public void СhangeUser(UserEntity user)
     {
-        if(updateUser == null || login == null)
+        if(user == null)
         {
-            throw new Exception();
+            throw new ArgumentNullException(nameof(user));
         }
-        else
-        {
-            var oldUser = GetUserByLogin(login);
 
-            if (oldUser == null)
-            {
-                throw new Exception();
-            }
-            else
-            {
-                if(oldUser.RevokedBy == null)
-                {
-                    oldUser.Name = updateUser.Name;
-                    oldUser.Gender = updateUser.Gender;
-                    oldUser.BirthDay = updateUser.BirthDay;
-                }
-                
-            }
-        }
+        SaveUser(user);
     }
 
     /// <summary>
@@ -146,28 +198,22 @@ public class UserService
     /// </summary>
     /// <param name="user"></param>
     /// <param name="updateUser"></param>
-    public void СhangePassword(string login,string password)
+    public void СhangePasswordUser(string login,string password)
     {
-        if(password == null)
+        if(string.IsNullOrEmpty(login) || string.IsNullOrEmpty(password))
         {
-            throw new Exception();
+            throw new ArgumentNullException($"{nameof(login)} or {nameof(password)}");
         }
-        else
+
+        var result = GetUserByLogin(login);
+
+        if (result == null)
         {
-            var resultCreateUser = GetUserByLoginAndPass(login,password);
-            
-            if (resultCreateUser != null)
-            {
-                if(resultCreateUser.RevokedOn == null)
-                {
-                    resultCreateUser.Password = password;
-                }
-            }
-            else
-            {
-                throw new Exception();
-            }
+            throw new NullReferenceException($"Пользователь с логином {login} не найден");
         }
+
+        result.Password = password;
+        SaveUser(result);
     }
 
     /// <summary>
@@ -175,33 +221,26 @@ public class UserService
     /// </summary>
     /// <param name="user"></param>
     /// <param name="updateUser"></param>
-    public void СhangeLogin(string login)
+    public void СhangeLoginUser(string oldLogin, string newLogin)
     {
-        if(login == null)
+        if (string.IsNullOrEmpty(oldLogin) || string.IsNullOrEmpty(newLogin))
         {
-            throw new Exception();
+            throw new ArgumentNullException($"{oldLogin} or {newLogin}");
         }
-        var resultChangeUser = GetUserByLogin(login);
-        //var resultUpdateUser = _users.FirstOrDefault(x => x.Guid == login.Guid && x.RevokedOn == null);
-
+        var resultChangeUser = GetUserByLogin(oldLogin);
+        
         if (resultChangeUser == null)
         {
-            throw new Exception();
+            throw new NullReferenceException($"Пользователь с логином {oldLogin} не найден");
         }
-        else
+
+        if(GetUserByLogin(newLogin) != null)
         {
-            if(resultChangeUser.RevokedOn == null)
-            {
-                if (!resultChangeUser.Login.Contains(resultChangeUser.Login))
-                {
-                    resultChangeUser.Login = login;
-                }
-                else
-                {
-                    throw new Exception("Такой логин существует");
-                }
-            }
+            throw new Exception($"Пользователь с логином {newLogin} уже существует");
         }
+
+        resultChangeUser.Login = newLogin;
+        SaveUser(resultChangeUser);
     }
 
     /// <summary>
@@ -210,22 +249,27 @@ public class UserService
     /// <param name="user"></param>
     public void RecoveryUser(string login)
     {
-        if(login == null)
+        if (string.IsNullOrEmpty(login))
         {
-            throw new Exception();
+            throw new ArgumentNullException(nameof(login));
         }
-        else
-        {
-            var recoveryUser = GetUserByLogin(login);
 
-            if (recoveryUser != null)
-            {
-                _users.Remove(recoveryUser);
-                recoveryUser.RevokedOn = null;
-                recoveryUser.RevokedBy = null;
-                _users.Add(recoveryUser);
-            }
+        var recoveryUser = GetUserByLogin(login);
+
+        if (recoveryUser == null)
+        {
+            throw new NullReferenceException($"Пользователь с логином {login} не найден");
         }
+
+        if (!IsPossibleToChange())
+        {
+            throw new Exception("Недостаточно прав");
+        }
+
+        recoveryUser.RevokedOn = null;
+        recoveryUser.RevokedBy = null;
+
+        SaveUser(recoveryUser);
     }
     #endregion
 
@@ -233,25 +277,32 @@ public class UserService
  
     public void DeleteUserByLogin(string login,bool softRemove = true)
     {
-        if (login == null)
+        if (string.IsNullOrEmpty(login))
         {
-            throw new Exception();
+            throw new ArgumentNullException(nameof(login));
         }
-        else
-        {
-            var deleteUserOnLogin = GetUserByLogin(login);
 
-            if (softRemove == true)
-            {
-                _users.Remove(deleteUserOnLogin);
-                deleteUserOnLogin.RevokedBy = null;
-                deleteUserOnLogin.RevokedBy = null;
-                _users.Add(deleteUserOnLogin);
-            }
-            else
-            {
-                _users.Remove(deleteUserOnLogin);
-            }
+        var deleteUserOnLogin = GetUserByLogin(login);
+
+        if (deleteUserOnLogin == null)
+        {
+            throw new NullReferenceException($"Пользователь с логином {login} не найден");
+        }
+
+        if (!IsPossibleToChange())
+        {
+            throw new Exception("Недостаточно прав");
+        }
+
+        _users.Remove(deleteUserOnLogin);
+
+        if (softRemove == true)
+        {
+            deleteUserOnLogin.RevokedOn = DateTime.Now;
+            deleteUserOnLogin.RevokedBy = _currentUser.Name;
+            deleteUserOnLogin.ModifiedOn = DateTime.Now;
+            deleteUserOnLogin.ModifiedBy = _currentUser.Name;
+            _users.Add(deleteUserOnLogin);
         }
     }
     #endregion
