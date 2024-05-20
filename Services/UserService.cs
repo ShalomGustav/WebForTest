@@ -100,7 +100,6 @@ public class UserService
             : false;
     }
 
-    #region Read(get)
     /// <summary>
     /// Запрос списка всех активных
     /// </summary>
@@ -147,9 +146,6 @@ public class UserService
         var resultOnBirthDay = _users.Where(x => x.BirthDay > (DateTime.Today.AddYears(-age))).ToList();
         return resultOnBirthDay;
     }
-    #endregion
-
-    #region Create(post)
 
     /// <summary>
     /// Создание пользователя
@@ -173,10 +169,6 @@ public class UserService
         _users.Add(user);
         return user;
     }
-
-    #endregion
-
-    #region Update(put)
 
     /// <summary>
     ///  Изменение имени, пола или даты рождения пользователя
@@ -271,9 +263,6 @@ public class UserService
 
         SaveUser(recoveryUser);
     }
-    #endregion
-
-    #region Delete(delete)
  
     public void DeleteUserByLogin(string login,bool softRemove = true)
     {
@@ -305,5 +294,4 @@ public class UserService
             _users.Add(deleteUserOnLogin);
         }
     }
-    #endregion
 }

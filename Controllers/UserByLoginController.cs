@@ -15,11 +15,12 @@ namespace WebForTest.Controllers
             _userService = userService;
         }
 
-        #region HttpGet
         [HttpPost("user-active")]
-        public List<UserEntity> GetActive()
+        public List<UserEntity> GetActive([FromBody] UserLogin userLogin)
         {
+            _userService.Login(userLogin.Login, userLogin.Password);
             var users = _userService.GetActiveUsers();
+            _userService.Logout();
             return users;
         }
 
@@ -31,69 +32,71 @@ namespace WebForTest.Controllers
             _userService.Logout();
             return result;
         }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="login"></param>
-        /// <returns></returns>
+
         [HttpPost("user-by-login")]
-        public UserEntity GetByLogin([FromQuery] string login)
+        public UserEntity GetByLogin([FromQuery] string login, [FromBody] UserLogin userLogin)
         {
-            var userLogin = _userService.GetUserByLogin(login);
-            return userLogin;
+            _userService.Login(userLogin.Login, userLogin.Password);
+            var result = _userService.GetUserByLogin(login);
+            _userService.Logout();
+            return result;
         }
 
         [HttpPost("user-by-birthday")]
-        public List<UserEntity> GetByBirthday([FromQuery] int age)
+        public List<UserEntity> GetByBirthday([FromQuery] int age, [FromBody] UserLogin userLogin)
         {
+            _userService.Login(userLogin.Login, userLogin.Password);
             var birthDay = _userService.GetUserByBirthday(age);
+            _userService.Logout();
             return birthDay;
         }
-        #endregion
-
-        #region HttpPost
 
         [HttpPost("create-user")]
-        public void CreateUser([FromBody] UserDetails userDetails)
+        public void CreateUser([FromQuery] UserDetails userDetails, [FromBody] UserLogin user)
         {
+            _userService.Login(user.Login, user.Password);
             _userService.CreateUser(userDetails);
+            _userService.Logout();
         }
 
-        #endregion
-
-        #region HttpPut
         [HttpPut("change-user")]
-        public void СhangeUser([FromBody] UserEntity user)
+        public void СhangeUser([FromBody] UserEntity user, [FromQuery] UserLogin userLogin)
         {
+            _userService.Login(userLogin.Login, userLogin.Password);
             _userService.СhangeUser(user);
+            _userService.Logout();
         }
 
         [HttpPut("change-password")]
-        public void СhangePassword([FromQuery] string login, string password)
+        public void СhangePassword([FromQuery] string login, string password, [FromBody] UserLogin userLogin)
         {
+            _userService.Login(userLogin.Login, userLogin.Password);
             _userService.СhangePasswordUser(login, password);
+            _userService.Logout();
         }
 
         [HttpPut("change-login")]
-        public void СhangeLogin([FromQuery] string oldLogin, string newLogin)
+        public void СhangeLogin([FromQuery] string oldLogin, string newLogin, [FromBody] UserLogin userLogin)
         {
+            _userService.Login(userLogin.Login, userLogin.Password);
             _userService.СhangeLoginUser(oldLogin, newLogin);
+            _userService.Logout();
         }
 
         [HttpPut("recovery-user")]
-        public void RecoveryUser([FromQuery] string login)
+        public void RecoveryUser([FromQuery] string login, [FromBody] UserLogin userLogin)
         {
+            _userService.Login(userLogin.Login, userLogin.Password);
             _userService.RecoveryUser(login);
+            _userService.Logout();
         }
 
-        #endregion
-
-        #region HttpDelete
         [HttpPost("delete-by-login")]
-        public void DeleteByLogin([FromQuery] string login, bool softRemove)
+        public void DeleteByLogin([FromQuery] string login, bool softRemove, [FromBody] UserLogin userLogin)
         {
+            _userService.Login(userLogin.Login, userLogin.Password);
             _userService.DeleteUserByLogin(login, softRemove);
+            _userService.Logout();
         }
-        #endregion
     }
 }

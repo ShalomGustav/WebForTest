@@ -16,7 +16,6 @@ public class UserController : ControllerBase
         _userService = userService;
     }
 
-    #region HttpGet
     [HttpGet("user-active")]
     public List<UserEntity> GetActive()
     {
@@ -46,21 +45,18 @@ public class UserController : ControllerBase
     }
 
     [HttpGet("login")]
-    public ActionResult Login([FromQuery]string login,string pass)
+    public ActionResult Login([FromQuery] string login,string pass)
     {
         _userService.Login(login, pass);
         return Ok();
     }
 
     [HttpGet("user-by-birthday")]
-    public List<UserEntity> GetByBirthday([FromQuery]int age)
+    public List<UserEntity> GetByBirthday([FromQuery] int age)
     {
         var birthDay = _userService.GetUserByBirthday(age);
         return birthDay;
     }
-    #endregion
-
-    #region HttpPost
 
     [HttpPost("create-user")]
     public void CreateUser([FromBody] UserDetails userDetails)
@@ -68,9 +64,6 @@ public class UserController : ControllerBase
         _userService.CreateUser(userDetails);
     }
 
-    #endregion
-
-    #region HttpPut
     [HttpPut("change-user")]
     public void СhangeUser([FromBody] UserEntity user)
     {
@@ -95,13 +88,9 @@ public class UserController : ControllerBase
         _userService.RecoveryUser(login);
     }
 
-    #endregion
-
-    #region HttpDelete
     [HttpDelete("delete-by-login")]
     public void DeleteByLogin([FromQuery] string login,bool softRemove)
     {
         _userService.DeleteUserByLogin(login,softRemove);
     }
-    #endregion
 }
