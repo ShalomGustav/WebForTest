@@ -33,8 +33,8 @@ namespace WebForTest.Controllers
             return result;
         }
 
-        [HttpPost("user-by-login")]
-        public UserEntity GetByLogin([FromQuery] string login, [FromBody] UserLogin userLogin)
+        [HttpPost("user-by-login/{login}")]
+        public UserEntity GetByLogin(string login, [FromBody] UserLogin userLogin)
         {
             _userService.Login(userLogin.Login, userLogin.Password);
             var result = _userService.GetUserByLogin(login);
@@ -83,19 +83,19 @@ namespace WebForTest.Controllers
             _userService.Logout();
         }
 
+        [HttpPost("delete-by-login/{login}")]
+        public void DeleteByLogin(string login, bool softRemove, [FromBody] UserLogin userLogin)
+        {
+            _userService.Login(userLogin.Login, userLogin.Password);
+            _userService.DeleteUserByLogin(login, softRemove);
+            _userService.Logout();
+        }
+
         [HttpPut("recovery-user")]
         public void RecoveryUser([FromQuery] string login, [FromBody] UserLogin userLogin)
         {
             _userService.Login(userLogin.Login, userLogin.Password);
             _userService.RecoveryUser(login);
-            _userService.Logout();
-        }
-
-        [HttpPost("delete-by-login")]
-        public void DeleteByLogin([FromQuery] string login, bool softRemove, [FromBody] UserLogin userLogin)
-        {
-            _userService.Login(userLogin.Login, userLogin.Password);
-            _userService.DeleteUserByLogin(login, softRemove);
             _userService.Logout();
         }
     }

@@ -15,37 +15,25 @@ public class UserService
         ApplyDefaultUserData();
     }
 
-    public UserEntity GetCurrentUser()
+    public string LoginToLower(string login)
     {
-        return _currentUser;
-    }
-
-    private void ApplyDefaultUserData()
-    {
-        var admin = new UserEntity()
-        {
-            Admin = true,
-            Login = "Admin",
-            Password = "password",
-            Name = "Maxim",
-        };
-        _users.Add(admin);
+        return login.ToLower();
     }
 
     public void Login(string login, string password)
     {
-        if(string.IsNullOrEmpty(login) || string.IsNullOrEmpty(password))
+        if (string.IsNullOrEmpty(login) || string.IsNullOrEmpty(password))
         {
             throw new ArgumentNullException($"{nameof(login)} or {nameof(password)}");
         }
 
-        var user = GetUserByLogin(login);
-        if(user == null)
+        var user = GetUserByLogin(login.ToLower());
+        if (user == null)
         {
             throw new NullReferenceException("Не верный логин или пароль");
         }
 
-        if(user.Password != password)
+        if (user.Password != password)
         {
             throw new ArgumentException("Не верный логин или пароль");
         }
@@ -58,46 +46,9 @@ public class UserService
         _currentUser = null;
     }
 
-    private void SaveUser(UserEntity user)
+    public UserEntity GetCurrentUser()
     {
-        var result = _users.FirstOrDefault(x => x.Guid == user.Guid);
-
-        if(result == null)
-        {
-            throw new NullReferenceException($"Пользователя с логином {user.Login} не существует");
-        }
-
-        if (IsPossibleToChange())
-        {
-            user.ModifiedOn = DateTime.Now;
-            user.ModifiedBy = _currentUser.Name;
-            _users.Remove(result);
-            _users.Add(user);
-        }
-    }
-
-    private bool IsPossibleToChange()
-    {
-        if(_currentUser == null)
-        {
-            return false;
-        }
-
-        var result = IsAdmin();
-
-        if(result == false)
-        {
-            result = _currentUser.RevokedOn == null;
-        }
-
-        return result;
-    }
-
-    private bool IsAdmin()
-    {
-        return _currentUser != null
-            ? _currentUser.Admin
-            : false;
+        return _currentUser;
     }
 
     /// <summary>
@@ -116,10 +67,9 @@ public class UserService
     /// </summary>
     /// <param name="login"></param>
     /// <returns></returns>
-    
     public UserEntity GetUserByLogin(string login)
     {
-        var resultOnLogin = _users.FirstOrDefault(x => x.Login == login);
+        var resultOnLogin = _users.FirstOrDefault(x => x.Login == login.ToLower());
 
         return resultOnLogin;
     }
@@ -148,36 +98,13 @@ public class UserService
     }
 
     /// <summary>
-    /// Создание пользователя
-    /// </summary>
-    /// <param name="user"></param>
-    /// <returns></returns>
-    public UserEntity CreateUser(UserDetails userDetails)
-    {
-        if(userDetails == null)
-        {
-            throw new ArgumentNullException(nameof(userDetails));
-        }
-
-        if (!IsAdmin())
-        {
-            throw new Exception("Недостаточно прав");
-        }
-
-        var user = UserEntity.ToUser(userDetails, _currentUser.Name);
-
-        _users.Add(user);
-        return user;
-    }
-
-    /// <summary>
     ///  Изменение имени, пола или даты рождения пользователя
     /// </summary>
     /// <param name="user"></param>
     /// <param name="updateUser"></param>
     public void СhangeUser(UserEntity user)
     {
-        if(user == null)
+        if (user == null)
         {
             throw new ArgumentNullException(nameof(user));
         }
@@ -190,9 +117,9 @@ public class UserService
     /// </summary>
     /// <param name="user"></param>
     /// <param name="updateUser"></param>
-    public void СhangePasswordUser(string login,string password)
+    public void СhangePasswordUser(string login, string password)
     {
-        if(string.IsNullOrEmpty(login) || string.IsNullOrEmpty(password))
+        if (string.IsNullOrEmpty(login) || string.IsNullOrEmpty(password))
         {
             throw new ArgumentNullException($"{nameof(login)} or {nameof(password)}");
         }
@@ -220,13 +147,13 @@ public class UserService
             throw new ArgumentNullException($"{oldLogin} or {newLogin}");
         }
         var resultChangeUser = GetUserByLogin(oldLogin);
-        
+
         if (resultChangeUser == null)
         {
             throw new NullReferenceException($"Пользователь с логином {oldLogin} не найден");
         }
 
-        if(GetUserByLogin(newLogin) != null)
+        if (GetUserByLogin(newLogin) != null)
         {
             throw new Exception($"Пользователь с логином {newLogin} уже существует");
         }
@@ -236,34 +163,36 @@ public class UserService
     }
 
     /// <summary>
-    /// Восстановление пользователя - Очистка полей (RevokedOn, RevokedBy)
+    /// Создание пользователя
     /// </summary>
     /// <param name="user"></param>
-    public void RecoveryUser(string login)
+    /// <returns></returns>
+    public UserEntity CreateUser(UserDetails userDetails)
     {
-        if (string.IsNullOrEmpty(login))
+        if(userDetails == null)
         {
-            throw new ArgumentNullException(nameof(login));
+            throw new ArgumentNullException(nameof(userDetails));
         }
 
-        var recoveryUser = GetUserByLogin(login);
-
-        if (recoveryUser == null)
-        {
-            throw new NullReferenceException($"Пользователь с логином {login} не найден");
-        }
-
-        if (!IsPossibleToChange())
+        if (!IsAdmin())
         {
             throw new Exception("Недостаточно прав");
         }
 
-        recoveryUser.RevokedOn = null;
-        recoveryUser.RevokedBy = null;
+        var user = UserEntity.ToUser(userDetails, _currentUser.Name);
 
-        SaveUser(recoveryUser);
+        _users.Add(user);
+        return user;
     }
- 
+
+    /// <summary>
+    /// Удаление пользователя по логину
+    /// </summary>
+    /// <param name="login"></param>
+    /// <param name="softRemove"></param>
+    /// <exception cref="ArgumentNullException"></exception>
+    /// <exception cref="NullReferenceException"></exception>
+    /// <exception cref="Exception"></exception>
     public void DeleteUserByLogin(string login,bool softRemove = true)
     {
         if (string.IsNullOrEmpty(login))
@@ -294,4 +223,90 @@ public class UserService
             _users.Add(deleteUserOnLogin);
         }
     }
+
+    /// <summary>
+    /// Восстановление пользователя - Очистка полей (RevokedOn, RevokedBy)
+    /// </summary>
+    /// <param name="user"></param>
+    public void RecoveryUser(string login)
+    {
+        if (string.IsNullOrEmpty(login))
+        {
+            throw new ArgumentNullException(nameof(login));
+        }
+
+        var recoveryUser = GetUserByLogin(login);
+
+        if (recoveryUser == null)
+        {
+            throw new NullReferenceException($"Пользователь с логином {login} не найден");
+        }
+
+        if (!IsPossibleToChange())
+        {
+            throw new Exception("Недостаточно прав");
+        }
+
+        recoveryUser.RevokedOn = null;
+        recoveryUser.RevokedBy = null;
+
+        SaveUser(recoveryUser);
+    }
+
+
+    #region Private
+    private void ApplyDefaultUserData()
+    {
+        var admin = new UserEntity()
+        {
+            Admin = true,
+            Login = "admin",
+            Password = "pass",
+            Name = "Maxim",
+        };
+        _users.Add(admin);
+    }
+
+    private bool IsPossibleToChange()
+    {
+        if (_currentUser == null)
+        {
+            return false;
+        }
+
+        var result = IsAdmin();
+
+        if (result == false)
+        {
+            result = _currentUser.RevokedOn == null;
+        }
+
+        return result;
+    }
+
+    private bool IsAdmin()
+    {
+        return _currentUser != null
+            ? _currentUser.Admin
+            : false;
+    }
+
+    private void SaveUser(UserEntity user)
+    {
+        var result = _users.FirstOrDefault(x => x.Guid == user.Guid);
+
+        if (result == null)
+        {
+            throw new NullReferenceException($"Пользователя с логином {user.Login} не существует");
+        }
+
+        if (IsPossibleToChange())
+        {
+            user.ModifiedOn = DateTime.Now;
+            user.ModifiedBy = _currentUser.Name;
+            _users.Remove(result);
+            _users.Add(user);
+        }
+    }
+    #endregion
 }

@@ -16,6 +16,20 @@ public class UserController : ControllerBase
         _userService = userService;
     }
 
+    [HttpGet("login")]
+    public ActionResult Login([FromQuery] string login, string pass)
+    {
+        _userService.Login(login, pass);
+        return Ok();
+    }
+
+    [HttpGet("logout")]
+    public ActionResult Logout()
+    {
+        _userService.Logout();
+        return Ok();
+    }
+
     [HttpGet("user-active")]
     public List<UserEntity> GetActive()
     {
@@ -30,25 +44,11 @@ public class UserController : ControllerBase
         return result;
     }
 
-    [HttpGet("logout")]
-    public ActionResult Logout()
-    {
-        _userService.Logout();
-        return Ok();
-    }
-
-    [HttpGet("user-by-login")]
-    public UserEntity GetByLogin([FromQuery] string login)
+    [HttpGet("user-by-login/{login}")]
+    public UserEntity GetByLogin(string login)
     {
         var userLogin = _userService.GetUserByLogin(login);
         return userLogin;
-    }
-
-    [HttpGet("login")]
-    public ActionResult Login([FromQuery] string login,string pass)
-    {
-        _userService.Login(login, pass);
-        return Ok();
     }
 
     [HttpGet("user-by-birthday")]
@@ -82,15 +82,15 @@ public class UserController : ControllerBase
         _userService.СhangeLoginUser(oldLogin, newLogin);
     }
 
+    [HttpDelete("delete-by-login/{login}")]
+    public void DeleteByLogin(string login,bool softRemove)
+    {
+        _userService.DeleteUserByLogin(login,softRemove);
+    }
+
     [HttpPut("recovery-user")]
     public void RecoveryUser([FromQuery] string login)
     {
         _userService.RecoveryUser(login);
-    }
-
-    [HttpDelete("delete-by-login")]
-    public void DeleteByLogin([FromQuery] string login,bool softRemove)
-    {
-        _userService.DeleteUserByLogin(login,softRemove);
     }
 }
