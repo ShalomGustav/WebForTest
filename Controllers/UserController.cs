@@ -16,19 +16,11 @@ public class UserController : ControllerBase
         _userService = userService;
     }
 
-    #region HttpGet
-    [HttpGet("user-active")]
-    public List<UserEntity> GetActive()
+    [HttpGet("login")]
+    public ActionResult Login([FromQuery] string login, string pass)
     {
-        var users = _userService.GetActiveUsers();
-        return users;
-    }
-
-    [HttpGet("user-current")]
-    public UserEntity GetCurrentUser()
-    {
-        var result = _userService.GetCurrentUser();
-        return result;
+        _userService.Login(login, pass);
+        return Ok();
     }
 
     [HttpGet("logout")]
@@ -38,29 +30,33 @@ public class UserController : ControllerBase
         return Ok();
     }
 
-    [HttpGet("user-by-login")]
-    public UserEntity GetByLogin([FromQuery] string login)
+    [HttpGet("active-user")]
+    public List<UserEntity> GetActive()
+    {
+        var users = _userService.GetActiveUsers();
+        return users;
+    }
+
+    [HttpGet("current-user")]
+    public UserEntity GetCurrentUser()
+    {
+        var result = _userService.GetCurrentUser();
+        return result;
+    }
+
+    [HttpGet("user-by-login/{login}")]
+    public UserEntity GetByLogin(string login)
     {
         var userLogin = _userService.GetUserByLogin(login);
         return userLogin;
     }
 
-    [HttpGet("login")]
-    public ActionResult Login([FromQuery]string login,string pass)
-    {
-        _userService.Login(login, pass);
-        return Ok();
-    }
-
     [HttpGet("user-by-birthday")]
-    public List<UserEntity> GetByBirthday([FromQuery]int age)
+    public List<UserEntity> GetByBirthday([FromQuery] int age)
     {
         var birthDay = _userService.GetUserByBirthday(age);
         return birthDay;
     }
-    #endregion
-
-    #region HttpPost
 
     [HttpPost("create-user")]
     public void CreateUser([FromBody] UserDetails userDetails)
@@ -68,25 +64,28 @@ public class UserController : ControllerBase
         _userService.CreateUser(userDetails);
     }
 
-    #endregion
-
-    #region HttpPut
-    [HttpPut("change-user")]
-    public void СhangeUser([FromBody] UserEntity user)
+    [HttpPut("update-user")]
+    public void UpdateUser([FromBody] UserEntity user)
     {
-         _userService.СhangeUser(user);
+         _userService.UpdateUser(user);
     }
 
     [HttpPut("change-password")]
     public void СhangePassword([FromQuery] string login, string password)
     {
-        _userService.СhangePasswordUser(login,password);
+        _userService.UpdatePasswordUser(login,password);
     }
 
     [HttpPut("change-login")]
     public void СhangeLogin([FromQuery] string oldLogin, string newLogin)
     {
-        _userService.СhangeLoginUser(oldLogin, newLogin);
+        _userService.UpdateLoginUser(oldLogin, newLogin);
+    }
+
+    [HttpDelete("delete-by-login/{login}")]
+    public void DeleteByLogin(string login,bool softRemove)
+    {
+        _userService.DeleteUserByLogin(login,softRemove);
     }
 
     [HttpPut("recovery-user")]
@@ -94,14 +93,4 @@ public class UserController : ControllerBase
     {
         _userService.RecoveryUser(login);
     }
-
-    #endregion
-
-    #region HttpDelete
-    [HttpDelete("delete-by-login")]
-    public void DeleteByLogin([FromQuery] string login,bool softRemove)
-    {
-        _userService.DeleteUserByLogin(login,softRemove);
-    }
-    #endregion
 }
