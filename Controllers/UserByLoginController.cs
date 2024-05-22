@@ -15,7 +15,7 @@ namespace WebForTest.Controllers
             _userService = userService;
         }
 
-        [HttpPost("user-active")]
+        [HttpPost("active-users")]
         public List<UserEntity> GetActive([FromBody] UserLogin userLogin)
         {
             _userService.Login(userLogin.Login, userLogin.Password);
@@ -24,7 +24,7 @@ namespace WebForTest.Controllers
             return users;
         }
 
-        [HttpPost("user-current")]
+        [HttpPost("current-user")]
         public UserEntity GetCurrentUser([FromBody] UserLogin userLogin)
         {
             _userService.Login(userLogin.Login, userLogin.Password);
@@ -59,11 +59,11 @@ namespace WebForTest.Controllers
             _userService.Logout();
         }
 
-        [HttpPut("change-user")]
-        public void СhangeUser([FromBody] UserEntity user, [FromQuery] UserLogin userLogin)
+        [HttpPut("update-user")]
+        public void UpdateUser([FromQuery] UserEntity user, [FromBody] UserLogin userLogin)
         {
             _userService.Login(userLogin.Login, userLogin.Password);
-            _userService.СhangeUser(user);
+            _userService.UpdateUser(user);
             _userService.Logout();
         }
 
@@ -71,7 +71,7 @@ namespace WebForTest.Controllers
         public void СhangePassword([FromQuery] string login, string password, [FromBody] UserLogin userLogin)
         {
             _userService.Login(userLogin.Login, userLogin.Password);
-            _userService.СhangePasswordUser(login, password);
+            _userService.UpdatePasswordUser(login, password);
             _userService.Logout();
         }
 
@@ -79,7 +79,7 @@ namespace WebForTest.Controllers
         public void СhangeLogin([FromQuery] string oldLogin, string newLogin, [FromBody] UserLogin userLogin)
         {
             _userService.Login(userLogin.Login, userLogin.Password);
-            _userService.СhangeLoginUser(oldLogin, newLogin);
+            _userService.UpdateLoginUser(oldLogin, newLogin);
             _userService.Logout();
         }
 

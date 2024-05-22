@@ -30,14 +30,14 @@ public class UserController : ControllerBase
         return Ok();
     }
 
-    [HttpGet("user-active")]
+    [HttpGet("active-user")]
     public List<UserEntity> GetActive()
     {
         var users = _userService.GetActiveUsers();
         return users;
     }
 
-    [HttpGet("user-current")]
+    [HttpGet("current-user")]
     public UserEntity GetCurrentUser()
     {
         var result = _userService.GetCurrentUser();
@@ -64,22 +64,22 @@ public class UserController : ControllerBase
         _userService.CreateUser(userDetails);
     }
 
-    [HttpPut("change-user")]
-    public void СhangeUser([FromBody] UserEntity user)
+    [HttpPut("update-user")]
+    public void UpdateUser([FromBody] UserEntity user)
     {
-         _userService.СhangeUser(user);
+         _userService.UpdateUser(user);
     }
 
     [HttpPut("change-password")]
     public void СhangePassword([FromQuery] string login, string password)
     {
-        _userService.СhangePasswordUser(login,password);
+        _userService.UpdatePasswordUser(login,password);
     }
 
     [HttpPut("change-login")]
     public void СhangeLogin([FromQuery] string oldLogin, string newLogin)
     {
-        _userService.СhangeLoginUser(oldLogin, newLogin);
+        _userService.UpdateLoginUser(oldLogin, newLogin);
     }
 
     [HttpDelete("delete-by-login/{login}")]

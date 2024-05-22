@@ -58,11 +58,12 @@ public class UserEntity
     /// Указание - является ли пользователь админом
     /// </summary>
     public bool Admin { get; set; }
-
+ 
     public static UserEntity ToUser(UserDetails userDetails, string createdBy)
     {
         var user = new UserEntity()
         {
+            Guid = Guid.NewGuid(),
             Login = userDetails.Login,
             Password = userDetails.Password,
             Name = userDetails.Name,

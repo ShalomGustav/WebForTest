@@ -15,11 +15,6 @@ public class UserService
         ApplyDefaultUserData();
     }
 
-    public string LoginToLower(string login)
-    {
-        return login.ToLower();
-    }
-
     public void Login(string login, string password)
     {
         if (string.IsNullOrEmpty(login) || string.IsNullOrEmpty(password))
@@ -27,7 +22,7 @@ public class UserService
             throw new ArgumentNullException($"{nameof(login)} or {nameof(password)}");
         }
 
-        var user = GetUserByLogin(login.ToLower());
+        var user = GetUserByLogin(login);
         if (user == null)
         {
             throw new NullReferenceException("Не верный логин или пароль");
@@ -51,58 +46,33 @@ public class UserService
         return _currentUser;
     }
 
-    /// <summary>
-    /// Запрос списка всех активных
-    /// </summary>
-    /// <returns></returns>
-    public List<UserEntity> GetActiveUsers()
+     public List<UserEntity> GetActiveUsers()
     {
         var resultRevokedOn = _users.Where(x => x.RevokedOn == null).OrderBy(x => x.CreatedOn).ToList();
 
         return resultRevokedOn;
     }
 
-    /// <summary>
-    /// Получение по логину
-    /// </summary>
-    /// <param name="login"></param>
-    /// <returns></returns>
     public UserEntity GetUserByLogin(string login)
     {
-        var resultOnLogin = _users.FirstOrDefault(x => x.Login == login.ToLower());
+        var resultOnLogin = _users.FirstOrDefault(x => x.Login.ToLower() == login.ToLower());
 
         return resultOnLogin;
     }
 
-    /// <summary>
-    /// Запрос пользователя по логину и паролю
-    /// </summary>
-    /// <param name="login"></param>
-    /// <param name="pass"></param>
-    /// <returns></returns>
     public UserEntity GetUserByLoginAndPass(string login, string pass)
     {
-        var resultOnLogPass = _users.FirstOrDefault(x => x.Login == login && x.Password == pass);
+        var resultOnLogPass = _users.FirstOrDefault(x => x.Login.ToLower() == login.ToLower() && x.Password == pass);
         return resultOnLogPass;
     }
 
-    /// <summary>
-    /// Запрос всех пользователей старше определённого возраста ввод типа int
-    /// </summary>
-    /// <param name="age"></param>
-    /// <returns></returns>
     public List<UserEntity> GetUserByBirthday(int age)
     {
         var resultOnBirthDay = _users.Where(x => x.BirthDay > (DateTime.Today.AddYears(-age))).ToList();
         return resultOnBirthDay;
     }
 
-    /// <summary>
-    ///  Изменение имени, пола или даты рождения пользователя
-    /// </summary>
-    /// <param name="user"></param>
-    /// <param name="updateUser"></param>
-    public void СhangeUser(UserEntity user)
+    public void UpdateUser(UserEntity user)
     {
         if (user == null)
         {
@@ -112,12 +82,7 @@ public class UserService
         SaveUser(user);
     }
 
-    /// <summary>
-    /// Изменение пароля
-    /// </summary>
-    /// <param name="user"></param>
-    /// <param name="updateUser"></param>
-    public void СhangePasswordUser(string login, string password)
+    public void UpdatePasswordUser(string login, string password)
     {
         if (string.IsNullOrEmpty(login) || string.IsNullOrEmpty(password))
         {
@@ -135,12 +100,7 @@ public class UserService
         SaveUser(result);
     }
 
-    /// <summary>
-    /// Изменение логина
-    /// </summary>
-    /// <param name="user"></param>
-    /// <param name="updateUser"></param>
-    public void СhangeLoginUser(string oldLogin, string newLogin)
+    public void UpdateLoginUser(string oldLogin, string newLogin)
     {
         if (string.IsNullOrEmpty(oldLogin) || string.IsNullOrEmpty(newLogin))
         {
@@ -162,11 +122,6 @@ public class UserService
         SaveUser(resultChangeUser);
     }
 
-    /// <summary>
-    /// Создание пользователя
-    /// </summary>
-    /// <param name="user"></param>
-    /// <returns></returns>
     public UserEntity CreateUser(UserDetails userDetails)
     {
         if(userDetails == null)
@@ -185,14 +140,6 @@ public class UserService
         return user;
     }
 
-    /// <summary>
-    /// Удаление пользователя по логину
-    /// </summary>
-    /// <param name="login"></param>
-    /// <param name="softRemove"></param>
-    /// <exception cref="ArgumentNullException"></exception>
-    /// <exception cref="NullReferenceException"></exception>
-    /// <exception cref="Exception"></exception>
     public void DeleteUserByLogin(string login,bool softRemove = true)
     {
         if (string.IsNullOrEmpty(login))
@@ -224,10 +171,6 @@ public class UserService
         }
     }
 
-    /// <summary>
-    /// Восстановление пользователя - Очистка полей (RevokedOn, RevokedBy)
-    /// </summary>
-    /// <param name="user"></param>
     public void RecoveryUser(string login)
     {
         if (string.IsNullOrEmpty(login))
@@ -252,7 +195,6 @@ public class UserService
 
         SaveUser(recoveryUser);
     }
-
 
     #region Private
     private void ApplyDefaultUserData()
